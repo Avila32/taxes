@@ -1,0 +1,111 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+        <title>Taxes</title>
+    </head>
+    <body>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script>
+			function saturate(x) {
+				if (x < 0) return 0;
+				if (x > 1) return 1;
+				return x;
+			}
+            function solve() {
+				var ik =  parseFloat(document.getElementById("ik").value);
+				var ik_hat = parseFloat(document.getElementById("ik_hat").value);
+				var rk = parseFloat(document.getElementById("rk").value);
+				var t = parseFloat(document.getElementById("t").value);
+				var pi = parseFloat(document.getElementById("pi").value);
+				var pi2 = parseFloat(document.getElementById("pi2").value);
+				var a = parseFloat(document.getElementById("a").value);
+				var p_wave = parseFloat(document.getElementById("p_wave").value);
+                
+                rk = Math.min(rk, ik);
+                var pk = (ik_hat - rk) / ik_hat;
+                pk = saturate(pk);
+                var c2 = pi2 * (ik - rk);
+                var c1 = ik - c2 - t * rk;
+                var bk = Math.min((1 - p_wave) * c2 / 2, a);
+                var p_hat = (1 / a) * bk;
+                p_hat = saturate(p_hat)
+                var E1 = ik - t * ik;
+                var E2 = (1 - pk) * (ik - t * rk)
+                var E3 = ik - pi * (ik - rk) - t * rk
+                var e1 = c1 + p_hat * ((1 - p_wave) * c2 - bk)
+                var e2 = pk * Math.max(e1, E3)
+                e = Math.max(E1, E2 + e2);
+                var beNice = E1 > e2 + E2
+                var giveBribe = e1 > E3
+                
+                document.getElementById("allDecl").value = E1;
+				document.getElementById("ev").value = e;
+				
+				var str = "";
+				if (beNice) {
+					str = "Задекларировать все свои доходы"
+				} else {
+					str = "Задекларировать часть своих доходов.\n"
+					if (giveBribe) {
+						str += "В случае проверки дать взятку " + bk + " рублей"
+					} else {
+						str += "В случае проверки не давать взятку и заплатить штраф"
+					}
+				}
+				document.getElementById("strtgy").value = str;
+                
+            }
+        </script>
+
+        <div rel="main" class="container content">
+            <div class="form-group col-lg-4">
+                <label class="control-label" for="ik"> чистый доход налогоплательщика </label>
+                <input class="form-control" id="ik" type="text" value="1000">
+                
+                <label class="control-label" for="ik_hat"> средний доход в данной области </label>
+                <input class="form-control" id="ik_hat" type="text" value="1000">
+                
+                <label class="control-label" for="rk"> декларируемый доход </label>
+                <input class="form-control" id="rk" type="text" value="900">
+                
+                <label class="control-label" for="t">t - налоговая ставка </label>
+                <input class="form-control" id="t" type="text" value="0.13">
+                
+                <label class="control-label" for="pi">pi - штрафная ставка </label>
+                <input class="form-control" id="pi" type="text" value="0.2">
+                
+                <label class="control-label" for="pi2">pi2 - штрафная за умышленное нарушение закона</label>
+                <input class="form-control" id="pi2" type="text" value="0.4">
+                
+                <label class="control-label" for="a"> минимальный размер взятки, на которую согласен налоговый инспектор</label>
+                <input class="form-control" id="a" type="text" value="100">
+                
+                <label class="control-label" for="p_wave">вероятность перепроверки налоговой проверки</label>
+                <input class="form-control" id="p_wave" type="text" value="0.1">
+                
+            </div>
+
+            <div class="form-group col-lg-4">
+                <button class="btn btn-success" onclick="solve()">Solve</button>
+            </div>
+            <div class="form-group col-lg-4">
+				<label class="control-label" for="allDecl">Прибыль в случае декларирования всего дохода</label>
+                <input class="form-control" id="allDecl" type="text" value="">
+            </div>
+            <div class="form-group col-lg-4">
+				<label class="control-label" for="ev">Мат.ожидание прибыли</label>
+                <input class="form-control" id="ev" type="text" value="">
+            </div>
+            <div class="form-group col-lg-4">
+				<label class="control-label" for="strtgy">Оптимальная стратегия</label>
+                <textarea class="form-control" rows="3" id="strtgy" placeholder="" required></textarea>
+            </div>
+            
+      
+		
+        </div>
+    </body>
+</html>
